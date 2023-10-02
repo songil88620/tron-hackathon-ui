@@ -1,6 +1,7 @@
 //export const apiHost = 'http://192.168.1.11:8000/';
 export const apiHost = 'https://aptback.onrender.com/'
 export const apiUpload = 'https://1hjmggtvpl.execute-api.ap-northeast-2.amazonaws.com/v1';
+export const NET = "0";
 
 export const tokenList = [
     {

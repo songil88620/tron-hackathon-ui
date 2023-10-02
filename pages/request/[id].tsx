@@ -8,7 +8,7 @@ import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutl
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import Link from 'next/link';
 import ProcessItem from '../../src/components/ProcessItem';
-import { apiHost } from '../../src/utils/constant';
+import { NET, apiHost } from '../../src/utils/constant';
 import axios from 'axios';
 import { Props, Requests } from '../../src/utils/types';
 import { parseEther } from 'viem'
@@ -56,7 +56,7 @@ const Request: React.FC<Props> = ({ address, connected, role, provider }) => {
 
     const payout = async () => {
         try {
-            var sNet = "0"
+            var sNet = NET;
             const TronWeb = sNet == "1" ? tronWeb : tronWebTest;
             const transaction = await TronWeb.transactionBuilder.sendTrx(request.owner, TronWeb.toSun(request.amount.amount), address);
             const signedTransaction = await signTransaction(transaction);

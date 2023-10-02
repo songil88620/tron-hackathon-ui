@@ -16,7 +16,7 @@ import { Divider, IconButton, InputBase, Paper } from '@mui/material';
 import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutlined';
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import Link from 'next/link';
-import { apiHost } from '../../src/utils/constant';
+import { NET, apiHost } from '../../src/utils/constant';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { Approver, Props, Safe } from '../../src/utils/types';
@@ -128,7 +128,7 @@ const Request: React.FC<Props> = ({ emissary, connected, address, role, provider
         try {
             if (safe.lump_check) {
                 var lm = safe.lump_amount
-                var sNet = "0"
+                var sNet = NET;
                 const TronWeb = sNet == "1" ? tronWeb : tronWebTest;
                 const transaction = await TronWeb.transactionBuilder.sendTrx(safe.recipient, TronWeb.toSun(safe.lump_amount.amount), address);
                 const signedTransaction = await signTransaction(transaction);

@@ -8,7 +8,7 @@ import ArrowCircleLeftOutlinedIcon from '@mui/icons-material/ArrowCircleLeftOutl
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import Link from 'next/link';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
-import { apiHost, apiUpload, networkList } from '../src/utils/constant';
+import { NET, apiHost, apiUpload, networkList } from '../src/utils/constant';
 import axios from 'axios';
 import * as nftlogoLottie from '../public/assets/lottie/nftlogo.json';
 import * as HDFCLottie from '../public/assets/lottie/HDFC.json';
@@ -17,7 +17,9 @@ import ImageUploading from 'react-images-uploading';
 import toast, { Toaster } from 'react-hot-toast';
 import { Props } from '../src/utils/types';
 import { ethers, providers } from 'ethers';
-import { nft_ABI } from '../src/utils/nftABI';  
+import { nft_ABI } from '../src/utils/nftABI';
+import { tronWeb, tronWebTest } from '../src/utils/TronWeb';
+import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 
 const nftlogo = {
     loop: true,
@@ -46,11 +48,12 @@ const getCurrentDate = () => {
     return currentDate;
 }
 
-const Request: React.FC<Props> = ({ role, emissary, connected, address, provider }) => {  
+const Request: React.FC<Props> = ({ role, emissary, connected, address, provider }) => {
 
     let inputRef: any
     const router = useRouter()
-    const [step, setStep] = useState(0) 
+    const { signMessage, signTransaction } = useWallet();
+    const [step, setStep] = useState(0)
     const [name, setName] = useState("")
     const [program, setProgram] = useState(false)
     const [contract_p, setContract_p] = useState("")
@@ -65,7 +68,7 @@ const Request: React.FC<Props> = ({ role, emissary, connected, address, provider
     const [contract_s, setContract_s] = useState("")
     const [network_s, setNetwork_s] = useState("Tron Mainnet");
     const [amount, setAmount] = useState('0')
-    const [hashres, setHashres] = useState('') 
+    const [hashres, setHashres] = useState('')
     const [images, setImages] = React.useState([]);
     const maxNumber = 1;
     const onChange = (imageList: any, addUpdateIndex: any) => {
@@ -103,20 +106,34 @@ const Request: React.FC<Props> = ({ role, emissary, connected, address, provider
         reader.onerror = function (error) {
             console.log(error);
         };
-    }  
+    }
 
     const createProgram = async () => {
         try {
             setStep(1)
             var hash = "";
+            const url = img
             if (redemption) {
-                const web3Provider = new providers.Web3Provider(provider)
-                const signer = web3Provider.getSigner()
-                const nftContract = new ethers.Contract('0xEBEC960a7cc1B8B8A7E18fD1BA8ab2995dA2e415', nft_ABI, signer);
-                const res = await nftContract.safeMint(address, img)
-                const r = await res.wait();
-                hash = r.transactionHash
-                setHashres(hash)
+                var sNet = NET;
+                const TronWeb = sNet == "1" ? tronWeb : tronWebTest;
+                const options = {
+                    feeLimit: 100000000,
+                }
+                const parameter = [
+                    { type: 'address', value: address },
+                    { type: 'string', value: url }
+                ]
+                const transaction = await TronWeb.transactionBuilder.triggerSmartContract(
+                    "TBw4MG9FS4gRWjXTb99BJ23u4G2mntn7aG",
+                    "safeMint(address,string)",
+                    options,
+                    parameter,
+                    address
+                )
+                const signedTransaction = await signTransaction(transaction.transaction);
+                const response = await TronWeb.trx.sendRawTransaction(signedTransaction)
+                setHashres(response.txid)
+                hash = response.txid
             }
             setTimeout(async () => {
                 const data = {
@@ -155,6 +172,7 @@ const Request: React.FC<Props> = ({ role, emissary, connected, address, provider
             }, 4000)
 
         } catch (e) {
+            console.log(">>>EE", e)
             setStep(0)
             toast.error("Error occured!", { position: 'top-right' })
         }
